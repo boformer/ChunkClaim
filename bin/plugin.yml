@@ -1,0 +1,27 @@
+name: ChunkClaim_Alpha
+main: com.github.schmidtbochum.chunkclaim.ChunkClaim
+version: 0.1.0
+description: >
+             Chunk Protection
+commands:
+  chunk:
+    description: Displays information about the chunk.
+  trust:
+    description: Trust other players in your chunks.
+  ignorechunks:
+    description: Ignore chunk ownership.
+  ic:
+    description: Ignore chunk ownership.
+permissions:
+    chunkclaim.ignorechunks:
+        description: Ignore chunk ownership.
+        default: op
+    chunkclaim.claim:
+        description: Claim Chunks.
+        default: true
+    chunkclaim.trust:
+        description: Trust other players in your chunks.
+        default: true
+    chunkclaim.trustpublic:
+        description: Trust all players in your chunks.
+        default: op
