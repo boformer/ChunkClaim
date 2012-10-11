@@ -1,6 +1,6 @@
 name: ChunkClaim_Alpha
 main: com.github.schmidtbochum.chunkclaim.ChunkClaim
-version: 0.1.0
+version: 0.2.0
 description: >
              Chunk Protection
 commands:
@@ -18,6 +18,9 @@ permissions:
         default: op
     chunkclaim.claim:
         description: Claim Chunks.
+        default: true
+    chunkclaim.drops:
+        description: Ability to drop items.
         default: true
     chunkclaim.trust:
         description: Trust other players in your chunks.

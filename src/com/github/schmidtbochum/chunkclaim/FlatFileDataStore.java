@@ -21,20 +21,21 @@ public class FlatFileDataStore extends DataStore {
 		return playerDataFolder.exists() || worldDataFolder.exists();
 	}
 	
-	FlatFileDataStore(List<String> worldNameList) throws Exception {
-		this.initialize(worldNameList);
+	FlatFileDataStore() throws Exception {
+		this.initialize();
 	}
 	
 	@Override
-	void initialize(List<String> worldNameList) throws Exception {
+	void initialize() throws Exception {
 		
 		//ensure data folders exist
 		new File(playerDataFolderPath).mkdirs();
 		new File(worldDataFolderPath).mkdirs();
 		
-		//load chunk data into memory
-		//get world folders
-	
+		//load worlds
+		
+		List<String> worldNameList = ChunkClaim.plugin.config_worlds;
+
 		for(int i = 0; i < worldNameList.size(); i++) {
 			
 			String worldName = worldNameList.get(i);
@@ -43,7 +44,7 @@ public class FlatFileDataStore extends DataStore {
 
 			this.loadWorldData(worldName);
 		}
-		super.initialize(worldNameList);
+		super.initialize();
 	}
 	@Override
 	synchronized void loadWorldData(String worldName) throws Exception {
@@ -131,7 +132,7 @@ public class FlatFileDataStore extends DataStore {
 
 				
 				} catch(Exception e) {
-					ChunkClaim.addLogEntry("Unable to load data for chunk \"" + files[j].getName() + "\": " + e.getMessage());
+					ChunkClaim.addLogEntry("Unable to load data for chunk \"" + worldName + "\\" + files[j].getName() + "\": " + e.getMessage());
 					
 				}
 				
@@ -240,27 +241,37 @@ public class FlatFileDataStore extends DataStore {
 				
 				inStream = new BufferedReader(new FileReader(playerFile.getAbsolutePath()));
 				
+				//first line is first join date
+				String firstJoinTimestampString = inStream.readLine();
+
+				//convert that to a date and store it
+				DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");	
+				try {
+					playerData.firstJoin = dateFormat.parse(firstJoinTimestampString);
+				} catch(ParseException parseException) {
+					ChunkClaim.addLogEntry("Unable to load first join date for \"" + playerFile.getName() + "\".");
+					playerData.firstJoin = null;
+				}
+				
 				//first line is last login timestamp
 				String lastLoginTimestampString = inStream.readLine();
 
 				//convert that to a date and store it
-				DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");	
 				try {
 					playerData.lastLogin = dateFormat.parse(lastLoginTimestampString);
 				} catch(ParseException parseException) {
 					ChunkClaim.addLogEntry("Unable to load last login for \"" + playerFile.getName() + "\".");
 					playerData.lastLogin = null;
 				}
-				
-				//second line is credits
+				//third line is credits
 				String creditsString = inStream.readLine();
 				playerData.credits = Integer.parseInt(creditsString);
 				
-				//third line is any bonus credits granted by administrators
+				//fourth line is any bonus credits granted by administrators
 				String bonusString = inStream.readLine();	
 				playerData.bonus = Integer.parseInt(bonusString);
 				
-				//fourth line are trusted builders (trusted on all chunks);
+				//fifth line are trusted builders (trusted on all chunks);
 				String line = inStream.readLine();	
 				playerData.builderNames = line.split(";");
 
@@ -285,30 +296,41 @@ public class FlatFileDataStore extends DataStore {
 
 		BufferedWriter outStream = null;
 		try	{
+		
 			//open the player's file
 			File playerDataFile = new File(playerDataFolderPath + File.separator + playerName);
 			playerDataFile.createNewFile();
 			outStream = new BufferedWriter(new FileWriter(playerDataFile));
 			
-			//first line is last login timestamp
-			if(playerData.lastLogin == null) playerData.lastLogin = new Date();
+			//first line is first join date
 			DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
+			outStream.write(dateFormat.format(playerData.firstJoin));
+			outStream.newLine();
+			
+			//second line is last login timestamp
+			if(playerData.lastLogin == null) playerData.lastLogin = new Date();
 			outStream.write(dateFormat.format(playerData.lastLogin));
 			outStream.newLine();
 			
-			//second line is credits
+			//third line is credits
 			outStream.write(String.valueOf(playerData.credits));
-			outStream.newLine();	
+			outStream.newLine();
 			
-			//third line is bonus
+			//fourth line is bonus
 			outStream.write(String.valueOf(playerData.bonus));
 			outStream.newLine();
 			
-			//fourth line are trusted builders (trusted on all chunks);
+			//fifth line are trusted builders (trusted on all chunks);
+			/*
 			for(int i = 0; i < playerData.builderNames.length; i++) {
 
 				outStream.write(playerData.builderNames[i] + ";");
 			}
+			*/
+			outStream.newLine();
+			
+			//filled line to prevent null
+			outStream.write("==========");
 			outStream.newLine();
 
 		} catch(Exception e) {

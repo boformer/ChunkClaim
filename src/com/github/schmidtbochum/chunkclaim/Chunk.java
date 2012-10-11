@@ -2,6 +2,7 @@ package com.github.schmidtbochum.chunkclaim;
 import java.util.*;
 
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 
 public class Chunk {
 	public String ownerName;
@@ -13,6 +14,15 @@ public class Chunk {
 	public boolean inDataStore;
 	public int x;
 	public int z;
+
+	Chunk(Location location, String o) {
+		this.x = location.getChunk().getX();
+		this.z = location.getChunk().getZ();
+		this.worldName = location.getWorld().getName();
+		this.ownerName = o;
+		this.claimDate = new Date();
+	}	
+	
 	Chunk(int px, int pz, String w, String o, Date cd, String [] b) {
 		this.x = px;
 		this.z = pz;
@@ -62,5 +72,13 @@ public class Chunk {
 	public void removeSurfaceFluids(Object object) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public boolean isTrusted(Player player) {
+		if(this.builderNames.contains(player)) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }

@@ -14,8 +14,6 @@ public class ChunkWorld {
 	
 	public void addChunk(Chunk newChunk) {
 		chunkTable.put(newChunk.x, newChunk.z,newChunk);
-
-		
 	}
 	public void removeChunk(Chunk chunk) {
 		chunkTable.remove(chunk.x, chunk.z);

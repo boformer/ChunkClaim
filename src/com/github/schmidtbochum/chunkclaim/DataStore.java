@@ -3,7 +3,6 @@ package com.github.schmidtbochum.chunkclaim;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Vector;
 
 import org.bukkit.Location;
@@ -21,8 +20,7 @@ public abstract class DataStore {
 	
 	protected final static String dataLayerFolderPath = "plugins" + File.separator + "ChunkClaim_Alpha";
 	
-	void initialize(List<String> worldNameList) throws Exception {
-		
+	void initialize() throws Exception {
 		ChunkClaim.addLogEntry(this.chunks.size() + " total claimed chunks loaded.");
 		
 		Vector<String> playerNames = new Vector<String>();
@@ -98,10 +96,8 @@ public abstract class DataStore {
 	synchronized public PlayerData getPlayerData(String playerName) {
 		
 		PlayerData playerData = this.playerNameToPlayerDataMap.get(playerName);
-		
 		if(playerData == null) {
 			playerData = this.getPlayerDataFromStorage(playerName);
-			
 			for(int i = 0; i < this.chunks.size(); i++)	{
 				Chunk chunk = this.chunks.get(i);
 				if(chunk.ownerName.equals(playerName)) {
