@@ -1,3 +1,23 @@
+/*
+    ChunkClaim Plugin for Minecraft Bukkit Servers
+    Copyright (C) 2012 Felix Schmidt
+    
+    This file is part of ChunkClaim.
+
+    ChunkClaim is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    ChunkClaim is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with ChunkClaim.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package com.github.schmidtbochum.chunkclaim;
 
 import java.io.*;
@@ -63,12 +83,10 @@ public abstract class DataStore {
 		this.saveChunk(chunk);
 		
 		//modify previous owner data
-		ownerData.chunks.remove(chunk);
 		ownerData.credits--;
 		this.savePlayerData(chunk.ownerName, ownerData);
 		
 		//modify new owner data
-		newOwnerData.chunks.add(chunk);
 		newOwnerData.credits++;
 		this.savePlayerData(newOwnerName, newOwnerData);
 		
@@ -98,13 +116,6 @@ public abstract class DataStore {
 		PlayerData playerData = this.playerNameToPlayerDataMap.get(playerName);
 		if(playerData == null) {
 			playerData = this.getPlayerDataFromStorage(playerName);
-			for(int i = 0; i < this.chunks.size(); i++)	{
-				Chunk chunk = this.chunks.get(i);
-				if(chunk.ownerName.equals(playerName)) {
-					playerData.chunks.add(chunk);
-				}
-			}
-			
 			this.playerNameToPlayerDataMap.put(playerName, playerData);
 		}
 		
@@ -114,23 +125,18 @@ public abstract class DataStore {
 	abstract PlayerData getPlayerDataFromStorage(String playerName);
 	
 	synchronized public void deleteChunk(Chunk chunk) {
+	
 		for(int i = 0; i < this.chunks.size(); i++) {
 			if(this.chunks.get(i).x == chunk.x && this.chunks.get(i).z == chunk.z && this.chunks.get(i).worldName.equals(chunk.worldName)) {
 				this.chunks.remove(i);
+				this.worlds.get(chunk.worldName).removeChunk(chunk);
 				chunk.inDataStore = false;
 				break;
 			}
 		}
 		this.deleteChunkFromSecondaryStorage(chunk);
 		
-		PlayerData ownerData = this.getPlayerData(chunk.ownerName);
-		for(int i = 0; i < ownerData.chunks.size(); i++) {
-			if(ownerData.chunks.get(i).x == chunk.x && ownerData.chunks.get(i).z == chunk.z && ownerData.chunks.get(i).worldName.equals(chunk.worldName)) {
-				ownerData.chunks.remove(i);
-				break;
-			}
-		}
-		this.savePlayerData(chunk.ownerName, ownerData);
+		ChunkClaim.plugin.regenerateChunk(chunk);
 	}
 	
 	abstract void deleteChunkFromSecondaryStorage(Chunk chunk);
@@ -145,25 +151,28 @@ public abstract class DataStore {
 		
 		return worlds.get(location.getWorld().getName()).getChunk(x,z);
 	}
-	
-	/*
-	synchronized public Chunk getChunkAt(int x, int z, String worldName) {
-		
-		if(!worlds.containsKey(worldName)) return null;
 
-		return worlds.get(worldName).getChunk(x,z);
-	}
-	*/
+	
+	
 	
 	public abstract void savePlayerData(String playerName, PlayerData playerData);
-
+	
+	synchronized public ArrayList<Chunk> getAllChunksForPlayer(String playerName) {
+		ArrayList <Chunk> playerChunks = new ArrayList <Chunk>();
+		for(int i = 0; i < chunks.size(); i++) {
+			Chunk chunk = chunks.get(i);
+			if(chunk.ownerName.equals(playerName)) {
+				playerChunks.add(chunk);
+			}
+		}
+		return playerChunks;
+	}
+	
 	synchronized public void deleteChunksForPlayer(String playerName) {
-		ArrayList <Chunk> playerChunks = playerNameToPlayerDataMap.get(playerName).chunks;
+		ArrayList <Chunk> playerChunks = getAllChunksForPlayer(playerName);
 		for(int i = 0; i < playerChunks.size(); i++) {
 			Chunk chunk = playerChunks.get(i);
-			chunk.removeSurfaceFluids(null);
 			this.deleteChunk(chunk);
-			
 		}
 	}
 	abstract void close();	

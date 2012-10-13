@@ -20,19 +20,19 @@
 
 package com.github.schmidtbochum.chunkclaim;
 
-import java.util.Date;
-
 import org.bukkit.Location;
+import org.bukkit.Material;
 
-public class PlayerData {
-	// String[] builderNames zu arraylist constructor
-	public int credits = 9;
-	public int bonus = 0;
-	public String[] builderNames;
-	public String playerName;
-	public Date lastLogin = new Date();
-	public Date firstJoin = new Date();
-	public Chunk lastChunk = null;
-	public Visualization currentVisualization = null;
-	public Location lastAfkCheckLocation = null;
+//represents a "fake" block sent to a player as part of a visualization
+public class VisualizationElement{
+
+	public Location location;
+	public Material visualizedMaterial;
+	public byte visualizedData; 
+	
+	public VisualizationElement(Location location, Material visualizedMaterial, byte visualizedData) {
+		this.location = location;
+		this.visualizedMaterial= visualizedMaterial;
+		this.visualizedData = visualizedData;
+	}
 }

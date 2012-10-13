@@ -17,22 +17,26 @@
     You should have received a copy of the GNU General Public License
     along with ChunkClaim.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package com.github.schmidtbochum.chunkclaim;
 
-import java.util.Date;
+import org.bukkit.entity.Player;
 
-import org.bukkit.Location;
+public class VisualizationClearTask implements Runnable {
+	
+	private Visualization visualization;
+	private Player player;
+	private PlayerData playerData;
+	
+	public VisualizationClearTask(Player player, PlayerData playerData, Visualization visualization) {
+		this.visualization = visualization;
+		this.playerData = playerData;
+		this.player = player;
+	}
+	
+	@Override
+	public void run() {
+		if(playerData.currentVisualization == visualization)
+			Visualization.Revert(player);
+	}
 
-public class PlayerData {
-	// String[] builderNames zu arraylist constructor
-	public int credits = 9;
-	public int bonus = 0;
-	public String[] builderNames;
-	public String playerName;
-	public Date lastLogin = new Date();
-	public Date firstJoin = new Date();
-	public Chunk lastChunk = null;
-	public Visualization currentVisualization = null;
-	public Location lastAfkCheckLocation = null;
 }
