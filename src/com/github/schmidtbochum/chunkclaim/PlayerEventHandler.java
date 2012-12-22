@@ -23,12 +23,12 @@ package com.github.schmidtbochum.chunkclaim;
 import java.util.Date;
 import java.util.HashSet;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Animals;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.PoweredMinecart;
 import org.bukkit.entity.StorageMinecart;
@@ -64,10 +64,12 @@ public class PlayerEventHandler implements Listener {
 		PlayerData playerData = this.dataStore.getPlayerData(playerName);
 		playerData.lastLogin = new Date();
 		
-		if(playerData.firstJoin==null) {
+		if(playerData.firstJoin==null)
 			playerData.firstJoin = new Date();
-		}
-		event.getPlayer().sendMessage(ChatColor.DARK_RED + "Running ChunkClaim Alpha. ONLY FOR TESTING!");
+		//if (!event.getPlayer().hasPlayedBefore())
+			//ChunkClaim.plugin.broadcast(ChatColor.LIGHT_PURPLE + "[GLaDOS] " + ChatColor.GREEN +"Welcome " + playerName + ChatColor.GREEN +" to The Colony!");
+
+		//event.getPlayer().sendMessage(ChatColor.DARK_RED + "Running ChunkClaim Alpha. ONLY FOR TESTING!");
 		this.dataStore.savePlayerData(playerName, playerData);
 	}
 	
@@ -113,7 +115,7 @@ public class PlayerEventHandler implements Listener {
 		if(chunk!=null) {
 			if(entity instanceof StorageMinecart || entity instanceof PoweredMinecart || entity instanceof Animals) {
 				if(!chunk.isTrusted(player.getName())) {
-					player.sendMessage("Not permitted.");
+					ChunkClaim.plugin.sendMsg(player,"Not permitted.");
 					event.setCancelled(true);
 				}
 				
@@ -132,7 +134,7 @@ public class PlayerEventHandler implements Listener {
 		
 		if(chunk!=null) {
 			if(!chunk.isTrusted(player.getName())) {
-				player.sendMessage("Not permitted.");
+				ChunkClaim.plugin.sendMsg(player,"Not permitted.");
 				bedEvent.setCancelled(true);
 			}
 		}
@@ -154,10 +156,10 @@ public class PlayerEventHandler implements Listener {
 			bucketEvent.setCancelled(true);
 			return;
 		}
-		if(chunk.ownerName.equals(player.getName())) {
+		if(chunk.isTrusted(player.getName())) {
 			return;
 		} else {
-			player.sendMessage("You don't have " + chunk.ownerName + "'s permission to build here.");
+			ChunkClaim.plugin.sendMsg(player,"You don't have " + chunk.ownerName + "'s permission to build here.");
 			bucketEvent.setCancelled(true);
 			return;
 		}
@@ -177,14 +179,31 @@ public class PlayerEventHandler implements Listener {
 			bucketEvent.setCancelled(true);
 			return;
 		}
-		if(chunk.ownerName.equals(player.getName())) {
+		if(chunk.isTrusted(player.getName())) {
 			return;
 		} else {
-			player.sendMessage("You don't have " + chunk.ownerName + "'s permission.");
+			ChunkClaim.plugin.sendMsg(player,"You don't have " + chunk.ownerName + "'s permission.");
 			bucketEvent.setCancelled(true);
 			return;
 		}
 	}
+	//when a player drops an item
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onPlayerDrop(PlayerDropItemEvent event) {
+    	if(!ChunkClaim.plugin.config_worlds.contains(event.getPlayer().getWorld().getName())) return;		
+    	
+		Item item = event.getItemDrop();
+		Material material = item.getItemStack().getType();
+		//allow dropping books
+		if(material == Material.WRITTEN_BOOK || material == Material.BOOK_AND_QUILL){
+			return;
+		} else {
+			//ChunkClaim.addLogEntry("Item drop cancelled.");
+			event.setCancelled(true);
+		}
+ 
+    }
+	
 	//when a player interacts with the world
 	@EventHandler(priority = EventPriority.LOWEST)
 	void onPlayerInteract(PlayerInteractEvent event) {
@@ -227,7 +246,7 @@ public class PlayerEventHandler implements Listener {
 				playerData.lastChunk = chunk;
 				if(!chunk.isTrusted(player.getName())) {
 					event.setCancelled(true);
-					player.sendMessage("You don't have " + chunk.ownerName + "'s permission to build here.");
+					ChunkClaim.plugin.sendMsg(player,"You don't have " + chunk.ownerName + "'s permission to build here.");
 					return;
 				}
 			}
@@ -239,7 +258,7 @@ public class PlayerEventHandler implements Listener {
 				playerData.lastChunk = chunk;
 				if(!chunk.isTrusted(player.getName())) {
 					event.setCancelled(true);
-					player.sendMessage("Not permitted.");
+					ChunkClaim.plugin.sendMsg(player,"Not permitted.");
 					return;
 				}
 			}
@@ -251,7 +270,7 @@ public class PlayerEventHandler implements Listener {
 				playerData.lastChunk = chunk;
 				if(!chunk.isTrusted(player.getName())) {
 					event.setCancelled(true);
-					player.sendMessage("Not permitted.");
+					ChunkClaim.plugin.sendMsg(player,"Not permitted.");
 					return;
 				}
 			}
@@ -271,7 +290,7 @@ public class PlayerEventHandler implements Listener {
 				playerData.lastChunk = chunk;
 				if(!chunk.isTrusted(player.getName())) {
 					event.setCancelled(true);
-					player.sendMessage("Not permitted.");
+					ChunkClaim.plugin.sendMsg(player,"Not permitted.");
 					return;
 				}
 			}
@@ -292,39 +311,39 @@ public class PlayerEventHandler implements Listener {
 					playerData.lastChunk = chunk;
 					if(!chunk.isTrusted(player.getName())) {
 						event.setCancelled(true);
-						player.sendMessage("Not permitted.");
+						ChunkClaim.plugin.sendMsg(player,"Not permitted.");
 						return;
 					}
 				} else {
 					event.setCancelled(true);
-					player.sendMessage("Not permitted.");
+					ChunkClaim.plugin.sendMsg(player,"Not permitted.");
 					return;
 				}
 			} else if(materialInHand == Material.MONSTER_EGG) {
-				if(ChunkClaim.plugin.config_mobsForCredits && (player.getItemInHand().getDurability() == EntityType.WOLF.getTypeId())) {
+				if(ChunkClaim.plugin.config_mobsForCredits && (player.getItemInHand().getDurability() == EntityType.WOLF.getTypeId() || player.getItemInHand().getDurability() == EntityType.OCELOT.getTypeId())) {
 				
 					Chunk chunk = this.dataStore.getChunkAt(clickedBlock.getLocation(), playerData.lastChunk);
 					if(chunk != null) {
 						playerData.lastChunk = chunk;
 						if(!chunk.isTrusted(player.getName())) {
 							event.setCancelled(true);
-							player.sendMessage("Not permitted.");
+							ChunkClaim.plugin.sendMsg(player,"Not permitted.");
 							return;
 						} else {
-							if(playerData.credits>0) {
-								player.sendMessage("You spawned this mob for 1 credit. Credits left: " + playerData.credits);
-								playerData.credits--;
+							if(playerData.getCredits()>=ChunkClaim.plugin.config_mobPrice) {
+								playerData.credits-=30;
+								ChunkClaim.plugin.sendMsg(player,"You spawned this mob for " + ChunkClaim.plugin.config_mobPrice +" credits. Credits left: " + playerData.getCredits());
 								return;
 								
 							} else {
 								event.setCancelled(true);	
-								player.sendMessage("Not enough credits to spawn a mob.");
+								ChunkClaim.plugin.sendMsg(player,"Not enough credits to spawn a mob ("+ChunkClaim.plugin.config_mobPrice+").");
 								return;
 							}
 						}
 					} else {
 						event.setCancelled(true);
-						player.sendMessage("Not permitted.");
+						ChunkClaim.plugin.sendMsg(player,"Not permitted.");
 						return;
 					}
 				} else {

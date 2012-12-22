@@ -110,18 +110,19 @@ public class EntityEventHandler implements Listener {
 		Material material = item.getItemStack().getType();
 
 		
-		//allow dropping books
-		if(material == Material.WRITTEN_BOOK || material == Material.BOOK_AND_QUILL){
+		//allow dropping books. levers for chairs plugin
+		if(material == Material.WRITTEN_BOOK || material == Material.BOOK_AND_QUILL || material == Material.LEVER){
 			return;
 		} else {
+			//ChunkClaim.addLogEntry("Item spawn cancelled.");
 			event.setCancelled(true);
 		}
 	}
-	
+
 	//when an experience bottle explodes...
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onExpBottle(ExpBottleEvent event) {
-		
+		if(!ChunkClaim.plugin.config_worlds.contains(event.getEntity().getWorld().getName())) return;		
 		event.setExperience(0);
 	}
 	
@@ -138,18 +139,20 @@ public class EntityEventHandler implements Listener {
 	//when an entity dies...
 	@EventHandler
 	public void onEntityDeath(EntityDeathEvent event) {
-		
+		if(!ChunkClaim.plugin.config_worlds.contains(event.getEntity().getWorld().getName())) return;		
 		event.setDroppedExp(0);
 		event.getDrops().clear();
 	}
-	
+	/*
 	//when an entity picks up an item
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onEntityPickup(EntityChangeBlockEvent event) {
+		if(!ChunkClaim.plugin.config_worlds.contains(event.getEntity().getWorld().getName())) return;		
 		if(event.getEntity() instanceof Enderman) {
 			event.setCancelled(true);
 		}
 	}
+	*/
 	
 	//when a painting is broken
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
@@ -181,7 +184,7 @@ public class EntityEventHandler implements Listener {
 		}
 		if(!chunk.isTrusted(((Player) remover).getName())) {
 			event.setCancelled(true);
-			((Player) remover).sendMessage("You don't have " + chunk.ownerName + "'s permission to build here.");
+			ChunkClaim.plugin.sendMsg(((Player) remover),"You don't have " + chunk.ownerName + "'s permission to build here.");
 			return;
 		}
 	}
@@ -200,7 +203,7 @@ public class EntityEventHandler implements Listener {
 		}
 		if(!chunk.isTrusted(player.getName())) {
 			event.setCancelled(true);
-			player.sendMessage("You don't have " + chunk.ownerName + "'s permission to build here.");
+			ChunkClaim.plugin.sendMsg(player,"You don't have " + chunk.ownerName + "'s permission to build here.");
 			return;
 		}
 	}
@@ -254,7 +257,7 @@ public class EntityEventHandler implements Listener {
 					else {
 						if(!chunk.isTrusted(attacker.getName())) {
 							event.setCancelled(true);
-							attacker.sendMessage("Not permitted.");
+							ChunkClaim.plugin.sendMsg(attacker,"Not permitted.");
 						}
 						//cache claim for later
 						if(playerData != null) {
@@ -314,7 +317,7 @@ public class EntityEventHandler implements Listener {
 			else {
 				if(!chunk.isTrusted(attacker.getName())) {
 					event.setCancelled(true);
-					attacker.sendMessage("Not permitted.");
+					ChunkClaim.plugin.sendMsg(attacker,"Not permitted.");
 				}
 				//cache claim for later
 				if(playerData != null) {

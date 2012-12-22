@@ -26,7 +26,7 @@ import org.bukkit.Location;
 public class Chunk {
 	public String ownerName;
 	public String worldName;
-	public int modifiedBlocks = -1;
+	public int modifiedBlocks = 0;
 	public ArrayList<String> builderNames = new ArrayList<String>();
 	public Date modifiedDate;
 	public Date claimDate;
@@ -41,6 +41,16 @@ public class Chunk {
 		this.ownerName = o;
 		this.claimDate = new Date();
 	}	
+	Chunk(Location location, String o,ArrayList<String> b) {
+		this.x = location.getChunk().getX();
+		this.z = location.getChunk().getZ();
+		this.worldName = location.getWorld().getName();
+		this.ownerName = o;
+		for(int i = 0; i < b.size(); i++) {
+			this.builderNames.add(b.get(i));
+		}
+		this.claimDate = new Date();
+	}	
 	
 	Chunk(int px, int pz, String w, String o, Date cd, String [] b) {
 		this.x = px;
@@ -48,7 +58,8 @@ public class Chunk {
 		this.worldName = w;
 		this.ownerName = o;
 		for(int i = 0; i < b.length; i++) {
-			builderNames.add(b[i]);
+			if(!b[i].equals(""))
+				builderNames.add(b[i]);
 		}
 		this.claimDate = cd;
 	}
@@ -58,7 +69,8 @@ public class Chunk {
 		this.worldName = w;
 		this.ownerName = o;
 		for(int i = 0; i < b.length; i++) {
-			builderNames.add(b[i]);
+			if(!b[i].equals(""))
+				builderNames.add(b[i]);
 		}
 		this.claimDate = new Date();
 	}
@@ -88,13 +100,22 @@ public class Chunk {
 			return false;
 		}
 	}
-	public void removeSurfaceFluids(Object object) {
-		// TODO Auto-generated method stub
+	public void modify() {
 		
+		if(this.modifiedBlocks<0) {
+			return;
+		} else {
+			this.modifiedBlocks++;
+			if(this.modifiedBlocks >= ChunkClaim.plugin.config_minModBlocks) {
+				this.modifiedBlocks=-1;
+			}
+			ChunkClaim.plugin.dataStore.writeChunkToStorage(this);
+		}
 	}
+	
 
 	public boolean isTrusted(String playerName) {
-		if(this.builderNames.contains(playerName) || this.ownerName.equals(playerName)) {
+		if(this.builderNames.contains(playerName) || this.ownerName.equals(playerName) || ChunkClaim.plugin.dataStore.getPlayerData(playerName).ignorechunks) {
 			return true;
 		} else {
 			return false;

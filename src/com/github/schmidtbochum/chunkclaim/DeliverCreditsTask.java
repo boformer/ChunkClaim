@@ -30,16 +30,22 @@ public class DeliverCreditsTask implements Runnable {
 	@Override
 	public void run()
 	{
+		
+		DataStore dataStore = ChunkClaim.plugin.dataStore;
+		
+		dataStore.cleanUp(100);
+		
+		
 		Player [] players = ChunkClaim.plugin.getServer().getOnlinePlayers();
 		
 		//ensure players get at least 1 block (if accrual is totally disabled, this task won't even be scheduled)
-		int accruedCredits = ChunkClaim.plugin.config_creditsPerHour / 12;
+		float accruedCredits = ChunkClaim.plugin.config_creditsPerHour / 12L;
 		
 		//for each online player
 		for(int i = 0; i < players.length; i++)
 		{
 			Player player = players[i];
-			DataStore dataStore = ChunkClaim.plugin.dataStore;
+			
 			PlayerData playerData = dataStore.getPlayerData(player.getName());
 			
 			Location lastLocation = playerData.lastAfkCheckLocation;
@@ -54,6 +60,7 @@ public class DeliverCreditsTask implements Runnable {
 					
 					//add blocks
 					playerData.credits += accruedCredits;
+					
 					
 					//respect limits
 					if(playerData.credits > ChunkClaim.plugin.config_maxCredits)

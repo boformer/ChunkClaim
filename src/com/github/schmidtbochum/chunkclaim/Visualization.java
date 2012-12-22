@@ -50,8 +50,8 @@ public class Visualization {
 			playerData.currentVisualization = visualization;
 			ChunkClaim.plugin.getServer().getScheduler().scheduleSyncDelayedTask(ChunkClaim.plugin, new VisualizationApplicationTask(player, playerData, visualization), 10L);
 			
-			//clear it after 10 seconds
-			ChunkClaim.plugin.getServer().getScheduler().scheduleSyncDelayedTask(ChunkClaim.plugin, new VisualizationClearTask(player, playerData, visualization), 200L);
+			//clear it after 20 seconds
+			ChunkClaim.plugin.getServer().getScheduler().scheduleSyncDelayedTask(ChunkClaim.plugin, new VisualizationClearTask(player, playerData, visualization), 400L);
 		}
 		
 	}
@@ -121,8 +121,10 @@ public class Visualization {
 		Byte accentByte = (byte)0;
 		
 		if(visualizationType == VisualizationType.Chunk) {
-			cornerMaterial = Material.SNOW_BLOCK;
-			accentMaterial = Material.SNOW_BLOCK;
+			cornerMaterial = Material.WOOL;
+			accentMaterial = Material.WOOL;
+			cornerByte = (byte)1; 
+			accentByte = (byte)1;
 		}
 		
 		else if(visualizationType == VisualizationType.ErrorChunk) {

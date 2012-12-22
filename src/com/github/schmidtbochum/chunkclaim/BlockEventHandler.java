@@ -60,25 +60,47 @@ public class BlockEventHandler implements Listener {
 		
 		if(!ChunkClaim.plugin.config_worlds.contains(event.getBlock().getWorld().getName())) return;
 		
+		
+		
 		Player player = event.getPlayer();
 		Block block = event.getBlock();
 		Location location = block.getLocation();
 		
+		
 		PlayerData playerData = this.dataStore.getPlayerData(player.getName());
 		Chunk chunk = dataStore.getChunkAt(location, playerData.lastChunk);
 		
+		if(playerData.ignorechunks) return;
+		
 		if(chunk == null) {
 			String playerName = player.getName();
-			if(playerData.credits > 0) {
-				Chunk newChunk = new Chunk(location,playerName);
+			
+			if(!player.hasPermission("chunkclaim.claim")) {
+				ChunkClaim.plugin.sendMsg(player,"You don't have permissions for claiming chunks.");
+				event.setCancelled(true);
+				return;
+			}
+			if(!dataStore.ownsNear(location, playerName)) {
+				ChunkClaim.plugin.sendMsg(player,"You don't own a chunk next to this one.");
+				ChunkClaim.plugin.sendMsg(player,"Confirm with /chunk claim. Please dont spam claimed chunks.");
+				event.setCancelled(true);
+				Visualization visualization = Visualization.FromBukkitChunk(location.getChunk(), location.getBlockY(), VisualizationType.Public, location);
+				Visualization.Apply(player, visualization);
+				return;
+			} else
+			
+			
+			if(playerData.getCredits() > 0) {
+				Chunk newChunk = new Chunk(location,playerName,playerData.builderNames);
 				
 				this.dataStore.addChunk(newChunk);
 				
 				playerData.credits--;
 				playerData.lastChunk=newChunk;
+				//newChunk.modify();
 				this.dataStore.savePlayerData(playerName, playerData);
 				
-				player.sendMessage("You claimed this chunk. Credits left: " + playerData.credits);
+				ChunkClaim.plugin.sendMsg(player,"You claimed this chunk. Credits left: " + playerData.getCredits());
 				
 				Visualization visualization = Visualization.FromChunk(newChunk, location.getBlockY(), VisualizationType.Chunk, location);
 				Visualization.Apply(player, visualization);
@@ -87,12 +109,12 @@ public class BlockEventHandler implements Listener {
 				
 				
 				
-				player.sendMessage("Not enough credits to claim this chunk.");
+				ChunkClaim.plugin.sendMsg(player,"Not enough credits to claim this chunk.");
 				
 				
 				if(playerData.lastChunk!=chunk) {
 					playerData.lastChunk=chunk;
-					Visualization visualization = Visualization.FromBukkitChunk(location.getChunk(), location.getBlockY(), VisualizationType.Chunk, location);
+					Visualization visualization = Visualization.FromBukkitChunk(location.getChunk(), location.getBlockY(), VisualizationType.Public, location);
 					Visualization.Apply(player, visualization);
 				}
 				
@@ -102,18 +124,20 @@ public class BlockEventHandler implements Listener {
 		}
 		else if(chunk.isTrusted(player.getName())) {
 			
-			
+			/*
 			if(playerData.lastChunk!=chunk) {
 				playerData.lastChunk=chunk;
 				Visualization visualization = Visualization.FromChunk(chunk, location.getBlockY(), VisualizationType.Chunk, location);
 				Visualization.Apply(player, visualization);
 			}
+			*/
+			//chunk.modify();
 			
 			return;
 		} else {
 			
 			
-			player.sendMessage("You don't have " + chunk.ownerName + "'s permission to build here.");
+			ChunkClaim.plugin.sendMsg(player,"You don't have " + chunk.ownerName + "'s permission to build here.");
 			
 			if(playerData.lastChunk!=chunk) {
 				playerData.lastChunk=chunk;
@@ -139,7 +163,15 @@ public class BlockEventHandler implements Listener {
 		PlayerData playerData = this.dataStore.getPlayerData(player.getName());
 		Chunk chunk = dataStore.getChunkAt(location, playerData.lastChunk);
 		
+		if(playerData.ignorechunks) return;
+		
 		if(chunk == null) {
+			
+			if(!player.hasPermission("chunkclaim.claim")) {
+				ChunkClaim.plugin.sendMsg(player,"You don't have permissions for claiming chunks.");
+				event.setCancelled(true);
+			}
+			
 			String playerName = player.getName();
 			
 			//prevent fire spam
@@ -149,46 +181,58 @@ public class BlockEventHandler implements Listener {
 			}			
 			//prevent tree spam
 			if(block.getType() == Material.SAPLING) {
-				player.sendMessage("Please dont spam chunks with trees.");
+				ChunkClaim.plugin.sendMsg(player,"Please dont spam chunks with trees.");
 				event.setCancelled(true);
 				return;
 			}
+			if(!dataStore.ownsNear(location, playerName)) {
+				ChunkClaim.plugin.sendMsg(player,"You don't own a chunk next to this one.");
+				ChunkClaim.plugin.sendMsg(player,"Confirm with /chunk claim. Please dont spam claimed chunks.");
+				Visualization visualization = Visualization.FromBukkitChunk(location.getChunk(), location.getBlockY(), VisualizationType.Public, location);
+				Visualization.Apply(player, visualization);
+				event.setCancelled(true);
+				return;
+			} else
+			
 			//check credits
-			if(playerData.credits <= 0) {
-				player.sendMessage("Not enough credits to claim this chunk.");
+			if(playerData.getCredits() <= 0) {
+				ChunkClaim.plugin.sendMsg(player,"Not enough credits to claim this chunk.");
 				
-				Visualization visualization = Visualization.FromBukkitChunk(location.getChunk(), location.getBlockY(), VisualizationType.Chunk, location);
+				Visualization visualization = Visualization.FromBukkitChunk(location.getChunk(), location.getBlockY(), VisualizationType.Public, location);
 				Visualization.Apply(player, visualization);
 				
 				event.setCancelled(true);
 				return;
 			}
 			//claim the chunk
-			Chunk newChunk = new Chunk(location,playerName);
+			Chunk newChunk = new Chunk(location,playerName,playerData.builderNames);
 			
 			this.dataStore.addChunk(newChunk);
 			
 			playerData.credits--;
 			playerData.lastChunk=newChunk;
+			newChunk.modify();
 			this.dataStore.savePlayerData(playerName, playerData);
 			
-			player.sendMessage("You claimed this chunk. Credits left: " + playerData.credits);
+			ChunkClaim.plugin.sendMsg(player,"You claimed this chunk. Credits left: " + playerData.getCredits());
 			
 			Visualization visualization = Visualization.FromChunk(newChunk, location.getBlockY(), VisualizationType.Chunk, location);
 			Visualization.Apply(player, visualization);
 			return;
 		}
 		else if(chunk.isTrusted(player.getName())) {
+			/*
 			if(playerData.lastChunk!=chunk) {
 				playerData.lastChunk=chunk;
 				Visualization visualization = Visualization.FromChunk(chunk, location.getBlockY(), VisualizationType.Chunk, location);
 				Visualization.Apply(player, visualization);
 			}
-			
+			*/
+			chunk.modify();
 			
 			return;
 		} else {
-			player.sendMessage("You don't have " + chunk.ownerName + "'s permission to build here.");
+			ChunkClaim.plugin.sendMsg(player,"You don't have " + chunk.ownerName + "'s permission to build here.");
 			
 			if(playerData.lastChunk!=chunk) {
 				playerData.lastChunk=chunk;

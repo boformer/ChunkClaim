@@ -20,19 +20,25 @@
 
 package com.github.schmidtbochum.chunkclaim;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 import org.bukkit.Location;
 
 public class PlayerData {
 	// String[] builderNames zu arraylist constructor
-	public int credits = 9;
-	public int bonus = 0;
-	public String[] builderNames;
+	public float credits = ChunkClaim.plugin.config_startCredits;
+	public float bonus = 0L;
 	public String playerName;
+	public ArrayList<String> builderNames = new ArrayList<String>();
 	public Date lastLogin = new Date();
 	public Date firstJoin = new Date();
 	public Chunk lastChunk = null;
 	public Visualization currentVisualization = null;
 	public Location lastAfkCheckLocation = null;
+	public boolean ignorechunks = false;
+	public int getCredits() {
+		return (int) credits;
+		
+	}
 }

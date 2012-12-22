@@ -127,9 +127,7 @@ public class FlatFileDataStore extends DataStore {
 						
 					//4. Line: List of Builders
 					String [] builderNames = inStream.readLine().split(";");
-
-
-
+					
 					inStream.close();
 				
 					
@@ -147,7 +145,6 @@ public class FlatFileDataStore extends DataStore {
 						this.unusedChunks.add(chunk);
 					}
 					this.worlds.get(chunk.worldName).addChunk(chunk);
-					
 					chunk.inDataStore = true;
 
 				
@@ -188,6 +185,8 @@ public class FlatFileDataStore extends DataStore {
 			//update date
 			chunk.modifiedDate = new Date(chunkFile.lastModified());
 			
+			
+			
 		} catch (Exception e) {
 			
 			ChunkClaim.addLogEntry("Unexpected exception saving data for chunk \"" + worldName + "\\" + fileName + "\": " + e.getMessage());
@@ -211,6 +210,7 @@ public class FlatFileDataStore extends DataStore {
 	
 		//3. Line: Number of modified blocks
 		outStream.write(String.valueOf(chunk.modifiedBlocks));
+		outStream.newLine();
 			
 		//4. Line: List of Builders
 		for(int i = 0; i < chunk.builderNames.size(); i++) {
@@ -285,16 +285,20 @@ public class FlatFileDataStore extends DataStore {
 				}
 				//third line is credits
 				String creditsString = inStream.readLine();
-				playerData.credits = Integer.parseInt(creditsString);
+				playerData.credits = Float.parseFloat(creditsString);
 				
 				//fourth line is any bonus credits granted by administrators
 				String bonusString = inStream.readLine();	
-				playerData.bonus = Integer.parseInt(bonusString);
+				playerData.bonus = Float.parseFloat(bonusString);
 				
-				//fifth line are trusted builders (trusted on all chunks);
-				String line = inStream.readLine();	
-				playerData.builderNames = line.split(";");
-
+				//5. line: list of builders
+				String [] b = inStream.readLine().split(";");
+				
+				for(int i = 0; i < b.length; i++) {
+					if(!b[i].equals(""))
+						playerData.builderNames.add(b[i]);
+				}
+				
 				inStream.close();
 				
 			} catch(Exception e) {
@@ -341,12 +345,10 @@ public class FlatFileDataStore extends DataStore {
 			outStream.newLine();
 			
 			//fifth line are trusted builders (trusted on all chunks);
-			/*
-			for(int i = 0; i < playerData.builderNames.length; i++) {
+			for(int i = 0; i < playerData.builderNames.size(); i++) {
 
-				outStream.write(playerData.builderNames[i] + ";");
+				outStream.write(playerData.builderNames.get(i) + ";");
 			}
-			*/
 			outStream.newLine();
 			
 			//filled line to prevent null

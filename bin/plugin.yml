@@ -1,32 +1,19 @@
-name: ChunkClaim_Alpha
+name: ChunkClaim
 main: com.github.schmidtbochum.chunkclaim.ChunkClaim
-version: 0.3.0
+version: 1.0.1
+author: schmidtbochum
+softdepend: [Multiverse-Core]
 description: >
              Chunk Protection
 commands:
   chunk:
     description: Displays information about the chunk.
-  credits:
-    description: Displays your credits.
-  trust:
-    description: Trust other players in your chunks.
-  ignorechunks:
-    description: Ignore chunk ownership.
-  abandonchunk:
-    description: Abandon a chunk.
+    permission: chunkclaim.claim
+    usage: "/chunk [credits|abandon|trust|untrust]"
 permissions:
-  chunkclaim.ignorechunks:
-    description: Ignore chunk ownership.
-    default: op
   chunkclaim.claim:
-    description: Claim Chunks.
-    default: true
-  chunkclaim.drops:
-    description: Ability to drop items.
-    default: true
-  chunkclaim.trust:
-    description: Trust other players in your chunks.
-    default: true
-  chunkclaim.trustpublic:
-    description: Trust all players in your chunks.
+    description: Claim chunks.
+    default: op
+  chunkclaim.admin:
+    description: Ignore chunk ownership, manage chunks.
     default: op
