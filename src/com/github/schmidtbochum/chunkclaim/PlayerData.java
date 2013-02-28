@@ -29,6 +29,7 @@ public class PlayerData {
 	// String[] builderNames zu arraylist constructor
 	public float credits = ChunkClaim.plugin.config_startCredits;
 	public float bonus = 0L;
+	public int chunksOwning=0;
 	public String playerName;
 	public ArrayList<String> builderNames = new ArrayList<String>();
 	public Date lastLogin = new Date();

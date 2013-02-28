@@ -299,6 +299,10 @@ public class FlatFileDataStore extends DataStore {
 						playerData.builderNames.add(b[i]);
 				}
 				
+				//Sixth line is number of chunks owning
+				String chunksOwningString = inStream.readLine();	
+				playerData.chunksOwning = Integer.parseInt(chunksOwningString);
+
 				inStream.close();
 				
 			} catch(Exception e) {
@@ -318,6 +322,8 @@ public class FlatFileDataStore extends DataStore {
 	@Override
 	synchronized public void savePlayerData(String playerName, PlayerData playerData) {
 
+		if(!Bukkit.getPlayer(playerName).hasPermission("chunkclaim.claim")) return;
+		
 		BufferedWriter outStream = null;
 		try	{
 		
@@ -349,6 +355,10 @@ public class FlatFileDataStore extends DataStore {
 
 				outStream.write(playerData.builderNames.get(i) + ";");
 			}
+			outStream.newLine();
+			
+			//Sixth line is number of chunks owning
+			outStream.write(String.valueOf(playerData.chunksOwning));
 			outStream.newLine();
 			
 			//filled line to prevent null

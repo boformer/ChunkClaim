@@ -90,6 +90,7 @@ public abstract class DataStore {
 				if(diff> chunkDeletionTime) {
 					PlayerData playerData = this.getPlayerData(chunk.ownerName);
 					playerData.credits++;
+					playerData.chunksOwning--;
 					this.savePlayerData(chunk.ownerName, playerData);
 					this.playerNameToPlayerDataMap.remove(chunk.ownerName);
 					ChunkClaim.addLogEntry("Auto-deleted chunk by "+chunk.ownerName+" at " + (chunk.x*16) + " | " + (chunk.z*16));
@@ -122,11 +123,13 @@ public abstract class DataStore {
 		this.saveChunk(chunk);
 		
 		//modify previous owner data
-		ownerData.credits--;
+		ownerData.credits++;
+		ownerData.chunksOwning--;
 		this.savePlayerData(chunk.ownerName, ownerData);
 		
 		//modify new owner data
-		newOwnerData.credits++;
+		newOwnerData.credits--;
+		newOwnerData.chunksOwning++;
 		this.savePlayerData(newOwnerName, newOwnerData);
 		
 	}
@@ -168,6 +171,7 @@ public abstract class DataStore {
 		for(int i = 0; i < this.chunks.size(); i++) {
 			if(this.chunks.get(i).x == chunk.x && this.chunks.get(i).z == chunk.z && this.chunks.get(i).worldName.equals(chunk.worldName)) {
 				this.chunks.remove(i);
+				
 				this.worlds.get(chunk.worldName).removeChunk(chunk);
 				chunk.inDataStore = false;
 				break;
@@ -219,6 +223,7 @@ public abstract class DataStore {
 		for(int i = 0; i < playerChunks.size(); i++) {
 			Chunk chunk = playerChunks.get(i);
 			this.deleteChunk(chunk);
+			playerData.chunksOwning--;
 			playerData.credits++;
 		}
 		return playerChunks.size();

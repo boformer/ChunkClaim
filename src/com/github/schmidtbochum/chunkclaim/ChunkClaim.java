@@ -45,6 +45,7 @@ public class ChunkClaim extends JavaPlugin {
 	public boolean config_protectContainers;
 	public boolean config_protectSwitches;
 	public boolean config_mobsForCredits;
+	public boolean config_nextToForce;
 	public int config_mobPrice;
 	public float config_creditsPerHour;
 	public float config_maxCredits;
@@ -81,6 +82,7 @@ public class ChunkClaim extends JavaPlugin {
 		this.config_maxCredits = (float) this.getConfig().getDouble("maxCredits");
 		this.config_minModBlocks = this.getConfig().getInt("minModBlocks");
 		this.config_autoDeleteDays = (float) this.getConfig().getDouble("autoDeleteDays");
+		this.config_nextToForce = this.getConfig().getBoolean("nextToForce");
 		
 		
 		try {
@@ -842,12 +844,13 @@ public class ChunkClaim extends JavaPlugin {
 							sendMsg(player,"You don't have permissions for claiming chunks.");
 							return true;
 						}
-						if(playerData.getCredits() > 0) {
+						if(playerData.getCredits() > 0 && (playerData.chunksOwning == 0 || !this.config_nextToForce)) {
 							Chunk newChunk = new Chunk(location,playerName,playerData.builderNames);
 							
 							this.dataStore.addChunk(newChunk);
 							
 							playerData.credits--;
+							playerData.chunksOwning++;
 							playerData.lastChunk=newChunk;
 							//newChunk.modify();
 							this.dataStore.savePlayerData(playerName, playerData);
@@ -857,7 +860,16 @@ public class ChunkClaim extends JavaPlugin {
 							Visualization visualization = Visualization.FromChunk(newChunk, location.getBlockY(), VisualizationType.Chunk, location);
 							Visualization.Apply(player, visualization);
 							
-						} else {
+						}
+						else if (playerData.getCredits() > 0 && this.config_nextToForce){
+							sendMsg(player,"The chunk must be next to your other chunks.");
+							if(playerData.lastChunk!=chunk) {
+								playerData.lastChunk=chunk;
+								Visualization visualization = Visualization.FromBukkitChunk(location.getChunk(), location.getBlockY(), VisualizationType.Public, location);
+								Visualization.Apply(player, visualization);
+							}
+						}
+						else {
 							
 							sendMsg(player,"Not enough credits to claim this chunk.");
 							
