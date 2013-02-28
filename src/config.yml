@@ -11,6 +11,7 @@ creditsPerHour: 3
 maxCredits: 30
 minModBlocks: 10
 autoDeleteDays: 2
+nextToForce: false
   
   
   
