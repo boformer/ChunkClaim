@@ -185,9 +185,12 @@ public class BlockEventHandler implements Listener {
 				event.setCancelled(true);
 				return;
 			}
+			
+			//prevent not nextTo chunks be claimed without command
 			if(!dataStore.ownsNear(location, playerName)) {
 				ChunkClaim.plugin.sendMsg(player,"You don't own a chunk next to this one.");
-				ChunkClaim.plugin.sendMsg(player,"Confirm with /chunk claim. Please dont spam claimed chunks.");
+				if(!ChunkClaim.plugin.config_nextToForce)
+					ChunkClaim.plugin.sendMsg(player,"Confirm with /chunk claim. Please dont spam claimed chunks.");
 				Visualization visualization = Visualization.FromBukkitChunk(location.getChunk(), location.getBlockY(), VisualizationType.Public, location);
 				Visualization.Apply(player, visualization);
 				event.setCancelled(true);
