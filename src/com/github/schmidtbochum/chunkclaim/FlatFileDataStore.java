@@ -220,7 +220,7 @@ public class FlatFileDataStore extends DataStore {
 		outStream.newLine();
 		
 		//filled line to prevent null
-		outStream.write("¡==========!");
+		outStream.write("==========");
 		outStream.newLine();
 	}
 
@@ -360,7 +360,7 @@ public class FlatFileDataStore extends DataStore {
 			outStream.newLine();
 			
 			//filled line to prevent null
-			outStream.write("¿==========?");
+			outStream.write("==========");
 			outStream.newLine();
 
 		} catch(Exception e) {

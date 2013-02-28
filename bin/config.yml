@@ -1,16 +1,14 @@
 # ChunkClaim Configuration File. 
 # Visit http://dev.bukkit.org/server-mods/chunkclaim/pages/configuration/
 worlds:
-  - world
-protectSwitches: true
-protectContainers: true
-mobsForCredits: true
+  - world_creativo
+protectSwitches: false
+protectContainers: false
+mobsForCredits: false
 mobPrice: 30
 startCredits: 11
 creditsPerHour: 3
 maxCredits: 30
 minModBlocks: 10
 autoDeleteDays: 2
-  
-  
-  
+nextToForce: true
