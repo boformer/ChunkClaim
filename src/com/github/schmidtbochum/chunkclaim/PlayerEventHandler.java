@@ -57,6 +57,7 @@ public class PlayerEventHandler implements Listener {
 	//when a player successfully joins the server...
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
 	void onPlayerJoin(PlayerJoinEvent event) {
+		if(!event.getPlayer().hasPermission("chunkclaim.claim")) return;
 		
 		String playerName = event.getPlayer().getName();
 		
@@ -76,6 +77,8 @@ public class PlayerEventHandler implements Listener {
 	//when a player quits...
 	@EventHandler(priority = EventPriority.HIGHEST)
 	void onPlayerQuit(PlayerQuitEvent event) {
+		if(!event.getPlayer().hasPermission("chunkclaim.claim")) return;
+
 		Player player = event.getPlayer();
 		PlayerData playerData = this.dataStore.getPlayerData(player.getName());
 		

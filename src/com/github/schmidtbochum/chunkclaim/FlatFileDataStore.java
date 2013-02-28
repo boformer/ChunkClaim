@@ -322,6 +322,8 @@ public class FlatFileDataStore extends DataStore {
 	@Override
 	synchronized public void savePlayerData(String playerName, PlayerData playerData) {
 
+		if(!Bukkit.getPlayer(playerName).hasPermission("chunkclaim.claim")) return;
+		
 		BufferedWriter outStream = null;
 		try	{
 		
