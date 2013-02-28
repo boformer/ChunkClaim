@@ -80,7 +80,7 @@ public class BlockEventHandler implements Listener {
 				event.setCancelled(true);
 				return;
 			}
-			if(!dataStore.ownsNear(location, playerName)) {
+			if(playerData.lastChunk != null && !dataStore.ownsNear(location, playerName)) {
 				ChunkClaim.plugin.sendMsg(player,"You don't own a chunk next to this one.");
 				ChunkClaim.plugin.sendMsg(player,"Confirm with /chunk claim. Please dont spam claimed chunks.");
 				event.setCancelled(true);
