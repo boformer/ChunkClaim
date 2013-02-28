@@ -45,6 +45,7 @@ public class ChunkClaim extends JavaPlugin {
 	public boolean config_protectContainers;
 	public boolean config_protectSwitches;
 	public boolean config_mobsForCredits;
+	public boolean config_nextToForce;
 	public int config_mobPrice;
 	public float config_creditsPerHour;
 	public float config_maxCredits;
@@ -81,6 +82,7 @@ public class ChunkClaim extends JavaPlugin {
 		this.config_maxCredits = (float) this.getConfig().getDouble("maxCredits");
 		this.config_minModBlocks = this.getConfig().getInt("minModBlocks");
 		this.config_autoDeleteDays = (float) this.getConfig().getDouble("autoDeleteDays");
+		this.config_nextToForce = this.getConfig().getBoolean("NextToForce");
 		
 		
 		try {
