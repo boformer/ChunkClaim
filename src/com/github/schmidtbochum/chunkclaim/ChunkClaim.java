@@ -842,7 +842,7 @@ public class ChunkClaim extends JavaPlugin {
 							sendMsg(player,"You don't have permissions for claiming chunks.");
 							return true;
 						}
-						if(playerData.getCredits() > 0) {
+						if(playerData.getCredits() > 0 && (playerData.lastChunk == null || !this.config_nextToForce)) {
 							Chunk newChunk = new Chunk(location,playerName,playerData.builderNames);
 							
 							this.dataStore.addChunk(newChunk);
@@ -857,7 +857,16 @@ public class ChunkClaim extends JavaPlugin {
 							Visualization visualization = Visualization.FromChunk(newChunk, location.getBlockY(), VisualizationType.Chunk, location);
 							Visualization.Apply(player, visualization);
 							
-						} else {
+						}
+						else if (playerData.getCredits() > 0 && this.config_nextToForce){
+							sendMsg(player,"The chunk must be next to your other chunks.");
+							if(playerData.lastChunk!=chunk) {
+								playerData.lastChunk=chunk;
+								Visualization visualization = Visualization.FromBukkitChunk(location.getChunk(), location.getBlockY(), VisualizationType.Public, location);
+								Visualization.Apply(player, visualization);
+							}
+						}
+						else {
 							
 							sendMsg(player,"Not enough credits to claim this chunk.");
 							
