@@ -82,7 +82,8 @@ public class BlockEventHandler implements Listener {
 			}
 			if(!dataStore.ownsNear(location, playerName)) {
 				ChunkClaim.plugin.sendMsg(player,"You don't own a chunk next to this one.");
-				ChunkClaim.plugin.sendMsg(player,"Confirm with /chunk claim. Please dont spam claimed chunks.");
+				if(!ChunkClaim.plugin.config_nextToForce || playerData.chunksOwning == 0)
+					ChunkClaim.plugin.sendMsg(player,"Confirm with /chunk claim. Please dont spam claimed chunks.");
 				event.setCancelled(true);
 				Visualization visualization = Visualization.FromBukkitChunk(location.getChunk(), location.getBlockY(), VisualizationType.Public, location);
 				Visualization.Apply(player, visualization);
@@ -96,6 +97,7 @@ public class BlockEventHandler implements Listener {
 				this.dataStore.addChunk(newChunk);
 				
 				playerData.credits--;
+				playerData.chunksOwning++;
 				playerData.lastChunk=newChunk;
 				//newChunk.modify();
 				this.dataStore.savePlayerData(playerName, playerData);
@@ -189,7 +191,7 @@ public class BlockEventHandler implements Listener {
 			//prevent not nextTo chunks be claimed without command
 			if(!dataStore.ownsNear(location, playerName)) {
 				ChunkClaim.plugin.sendMsg(player,"You don't own a chunk next to this one.");
-				if(!ChunkClaim.plugin.config_nextToForce || playerData.lastChunk == null)
+				if(!ChunkClaim.plugin.config_nextToForce || playerData.chunksOwning == 0)
 					ChunkClaim.plugin.sendMsg(player,"Confirm with /chunk claim. Please dont spam claimed chunks.");
 				Visualization visualization = Visualization.FromBukkitChunk(location.getChunk(), location.getBlockY(), VisualizationType.Public, location);
 				Visualization.Apply(player, visualization);
@@ -213,6 +215,7 @@ public class BlockEventHandler implements Listener {
 			this.dataStore.addChunk(newChunk);
 			
 			playerData.credits--;
+			playerData.chunksOwning++;
 			playerData.lastChunk=newChunk;
 			newChunk.modify();
 			this.dataStore.savePlayerData(playerName, playerData);

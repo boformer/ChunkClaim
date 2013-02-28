@@ -220,7 +220,7 @@ public class FlatFileDataStore extends DataStore {
 		outStream.newLine();
 		
 		//filled line to prevent null
-		outStream.write("==========");
+		outStream.write("¡==========!");
 		outStream.newLine();
 	}
 
@@ -299,6 +299,10 @@ public class FlatFileDataStore extends DataStore {
 						playerData.builderNames.add(b[i]);
 				}
 				
+				//Sixth line is number of chunks owning
+				String chunksOwningString = inStream.readLine();	
+				playerData.chunksOwning = Integer.parseInt(chunksOwningString);
+
 				inStream.close();
 				
 			} catch(Exception e) {
@@ -351,8 +355,12 @@ public class FlatFileDataStore extends DataStore {
 			}
 			outStream.newLine();
 			
+			//Sixth line is number of chunks owning
+			outStream.write(String.valueOf(playerData.chunksOwning));
+			outStream.newLine();
+			
 			//filled line to prevent null
-			outStream.write("==========");
+			outStream.write("¿==========?");
 			outStream.newLine();
 
 		} catch(Exception e) {

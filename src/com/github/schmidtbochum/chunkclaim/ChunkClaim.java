@@ -82,7 +82,7 @@ public class ChunkClaim extends JavaPlugin {
 		this.config_maxCredits = (float) this.getConfig().getDouble("maxCredits");
 		this.config_minModBlocks = this.getConfig().getInt("minModBlocks");
 		this.config_autoDeleteDays = (float) this.getConfig().getDouble("autoDeleteDays");
-		this.config_nextToForce = this.getConfig().getBoolean("NextToForce");
+		this.config_nextToForce = this.getConfig().getBoolean("nextToForce");
 		
 		
 		try {
@@ -844,12 +844,13 @@ public class ChunkClaim extends JavaPlugin {
 							sendMsg(player,"You don't have permissions for claiming chunks.");
 							return true;
 						}
-						if(playerData.getCredits() > 0 && (playerData.lastChunk == null || !this.config_nextToForce)) {
+						if(playerData.getCredits() > 0 && (playerData.chunksOwning == 0 || !this.config_nextToForce)) {
 							Chunk newChunk = new Chunk(location,playerName,playerData.builderNames);
 							
 							this.dataStore.addChunk(newChunk);
 							
 							playerData.credits--;
+							playerData.chunksOwning++;
 							playerData.lastChunk=newChunk;
 							//newChunk.modify();
 							this.dataStore.savePlayerData(playerName, playerData);
