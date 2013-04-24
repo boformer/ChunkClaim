@@ -77,7 +77,7 @@ public abstract class DataStore {
 		
 		Date now = new Date();
 		double deletionTime = (1000 * 60 * 60 * 24)*ChunkClaim.plugin.config_autoDeleteDays;
-
+		int r = 0;
 		for(int i = 0; i < n; i++) {
 			nextChunkId++;
 			
@@ -94,8 +94,10 @@ public abstract class DataStore {
 					this.playerNameToPlayerDataMap.remove(chunk.ownerName);
 					ChunkClaim.addLogEntry("Auto-deleted chunk by "+chunk.ownerName+" at " + (chunk.x*16) + " | " + (chunk.z*16));
 					this.deleteChunk(chunk);
+					r++;
 				};
 			}
+			if(r > 50) break;
 		}
 		
 	}

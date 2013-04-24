@@ -22,6 +22,7 @@ package com.github.schmidtbochum.chunkclaim;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 
 import org.bukkit.Location;
 

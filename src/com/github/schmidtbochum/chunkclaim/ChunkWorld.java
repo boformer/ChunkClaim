@@ -37,7 +37,6 @@ public class ChunkWorld {
 	}
 	public void removeChunk(Chunk chunk) {
 		chunkTable.remove(chunk.x, chunk.z);
-		
 	}
 	ChunkWorld(String name) {
 		this.worldName = name;

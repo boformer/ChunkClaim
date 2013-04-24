@@ -20,6 +20,7 @@
 
 package com.github.schmidtbochum.chunkclaim;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Location;
@@ -81,8 +82,22 @@ public class BlockEventHandler implements Listener {
 				return;
 			}
 			if(!dataStore.ownsNear(location, playerName)) {
-				ChunkClaim.plugin.sendMsg(player,"You don't own a chunk next to this one.");
-				ChunkClaim.plugin.sendMsg(player,"Confirm with /chunk claim. Please dont spam claimed chunks.");
+				if(!ChunkClaim.plugin.config_nextToForce && !player.hasPermission("chunkclaim.admin")) {
+					ChunkClaim.plugin.sendMsg(player,"You don't own a chunk next to this one.");
+					ChunkClaim.plugin.sendMsg(player,"Confirm with /chunk claim. Please don't spam claimed chunks.");
+				}
+				else
+				{
+					ArrayList<Chunk> playerChunks = ChunkClaim.plugin.dataStore.getAllChunksForPlayer(playerName);
+					if(playerChunks.size()>0) {
+						ChunkClaim.plugin.sendMsg(player,"You can only build next to your first claimed chunk.");
+					}
+					else
+					{
+						ChunkClaim.plugin.sendMsg(player,"You don't own a chunk next to this one.");
+						ChunkClaim.plugin.sendMsg(player,"Confirm with /chunk claim. Please don't spam claimed chunks.");
+					}
+				}
 				event.setCancelled(true);
 				Visualization visualization = Visualization.FromBukkitChunk(location.getChunk(), location.getBlockY(), VisualizationType.Public, location);
 				Visualization.Apply(player, visualization);
@@ -186,11 +201,25 @@ public class BlockEventHandler implements Listener {
 				return;
 			}
 			if(!dataStore.ownsNear(location, playerName)) {
-				ChunkClaim.plugin.sendMsg(player,"You don't own a chunk next to this one.");
-				ChunkClaim.plugin.sendMsg(player,"Confirm with /chunk claim. Please dont spam claimed chunks.");
+				if(!ChunkClaim.plugin.config_nextToForce && !player.hasPermission("chunkclaim.admin")) {
+					ChunkClaim.plugin.sendMsg(player,"You don't own a chunk next to this one.");
+					ChunkClaim.plugin.sendMsg(player,"Confirm with /chunk claim. Please don't spam claimed chunks.");
+				}
+				else
+				{
+					ArrayList<Chunk> playerChunks = ChunkClaim.plugin.dataStore.getAllChunksForPlayer(playerName);
+					if(playerChunks.size()>0) {
+						ChunkClaim.plugin.sendMsg(player,"You can only build next to your first claimed chunk.");
+					}
+					else
+					{
+						ChunkClaim.plugin.sendMsg(player,"You don't own a chunk next to this one.");
+						ChunkClaim.plugin.sendMsg(player,"Confirm with /chunk claim. Please don't spam claimed chunks.");
+					}
+				}
+				event.setCancelled(true);
 				Visualization visualization = Visualization.FromBukkitChunk(location.getChunk(), location.getBlockY(), VisualizationType.Public, location);
 				Visualization.Apply(player, visualization);
-				event.setCancelled(true);
 				return;
 			} else
 			

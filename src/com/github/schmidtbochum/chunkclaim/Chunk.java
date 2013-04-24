@@ -33,6 +33,8 @@ public class Chunk {
 	public boolean inDataStore;
 	public int x;
 	public int z;
+	public boolean marked = false;
+	public boolean inspected = false;
 
 	Chunk(Location location, String o) {
 		this.x = location.getChunk().getX();
@@ -112,8 +114,15 @@ public class Chunk {
 			ChunkClaim.plugin.dataStore.writeChunkToStorage(this);
 		}
 	}
+	public void mark() {
+			this.modifiedBlocks=0;
+			ChunkClaim.plugin.dataStore.writeChunkToStorage(this);
+	}
+	public void unmark() {
+		this.modifiedBlocks=-1;
+		ChunkClaim.plugin.dataStore.writeChunkToStorage(this);
+}
 	
-
 	public boolean isTrusted(String playerName) {
 		if(this.builderNames.contains(playerName) || this.ownerName.equals(playerName) || ChunkClaim.plugin.dataStore.getPlayerData(playerName).ignorechunks) {
 			return true;

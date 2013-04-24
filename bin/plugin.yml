@@ -1,6 +1,6 @@
 name: ChunkClaim
 main: com.github.schmidtbochum.chunkclaim.ChunkClaim
-version: 1.0.1
+version: 1.1.0
 author: schmidtbochum
 softdepend: [Multiverse-Core]
 description: >

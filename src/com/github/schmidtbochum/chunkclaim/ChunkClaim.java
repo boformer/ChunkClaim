@@ -22,6 +22,7 @@ package com.github.schmidtbochum.chunkclaim;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -51,6 +52,8 @@ public class ChunkClaim extends JavaPlugin {
 	public float config_startCredits;
 	public int config_minModBlocks;
 	public float config_autoDeleteDays;
+	public boolean config_nextToForce;
+	private boolean config_regenerateChunk;
 
 	public void onDisable() {
 		Player[] players = this.getServer().getOnlinePlayers();
@@ -62,6 +65,7 @@ public class ChunkClaim extends JavaPlugin {
 		}
 
 		this.dataStore.close();
+		this.plugin = null;
 	}
 
 	public void onEnable() {
@@ -81,7 +85,8 @@ public class ChunkClaim extends JavaPlugin {
 		this.config_maxCredits = (float) this.getConfig().getDouble("maxCredits");
 		this.config_minModBlocks = this.getConfig().getInt("minModBlocks");
 		this.config_autoDeleteDays = (float) this.getConfig().getDouble("autoDeleteDays");
-		
+		this.config_nextToForce = this.getConfig().getBoolean("nextToForce");
+		this.config_regenerateChunk = this.getConfig().getBoolean("regenerateChunk");
 		
 		try {
 			this.dataStore = new FlatFileDataStore();
@@ -116,8 +121,8 @@ public class ChunkClaim extends JavaPlugin {
 			DeliverCreditsTask task = new DeliverCreditsTask();
 			this.getServer()
 					.getScheduler()
-					.scheduleSyncRepeatingTask(this, task, 20L * 60 * 5,
-							20L * 60 * 5);
+					.scheduleSyncRepeatingTask(this, task, 20L * 60 * 60,
+							20L * 60 * 60);
 		}
 
 		// Example Claim (debugging)
@@ -157,7 +162,24 @@ public class ChunkClaim extends JavaPlugin {
 						adminstring += ", Last Login: " + loginDays +" days ago.";
 					}
 					sendMsg(player,adminstring);
-
+					if(chunk != null && !chunk.ownerName.equals(player.getName())) {
+						StringBuilder builders = new StringBuilder();
+						for (int i = 0; i < chunk.builderNames.size(); i++) {
+	
+							builders.append(chunk.builderNames.get(i));
+	
+							if (i < chunk.builderNames.size() - 1) {
+	
+								builders.append(", ");
+							}
+						}
+						Visualization visualization = Visualization.FromChunk(
+								chunk, location.getBlockY(),
+								VisualizationType.Chunk, location);
+						Visualization.Apply(player, visualization);
+						sendMsg(player,"Trusted Builders:");
+						sendMsg(player,builders.toString());
+					}
 				}
 				
 				if (chunk == null) {
@@ -835,14 +857,31 @@ public class ChunkClaim extends JavaPlugin {
 					PlayerData playerData = dataStore.getPlayerData(player.getName());
 					Chunk chunk = dataStore.getChunkAt(location, playerData.lastChunk);
 					
+					String playerName = player.getName();
+					
 					if(chunk == null) {
-						String playerName = player.getName();
+						
 						
 						if(!player.hasPermission("chunkclaim.claim")) {
 							sendMsg(player,"You don't have permissions for claiming chunks.");
 							return true;
 						}
 						if(playerData.getCredits() > 0) {
+							
+							if(config_nextToForce && !player.hasPermission("chunkclaim.admin"))
+							{
+								ArrayList<Chunk> playerChunks = dataStore.getAllChunksForPlayer(playerName);
+								
+								if(playerChunks.size()>0) 
+								{
+									if(!dataStore.ownsNear(location, playerName)) {
+										sendMsg(player,"You can only claim a new chunk next to your existing chunks.");
+										return true;
+									}
+								}
+							}
+							
+							
 							Chunk newChunk = new Chunk(location,playerName,playerData.builderNames);
 							
 							this.dataStore.addChunk(newChunk);
@@ -919,8 +958,160 @@ public class ChunkClaim extends JavaPlugin {
 						sendMsg(player,"Usage: /chunk list <player>");
 						return true;
 					}
-			} else return false;
-				
+				} else {
+					return false;
+				}
+			}
+			else if (args[0].equalsIgnoreCase("mark")) {
+				if(player.hasPermission("chunkclaim.admin")) {
+					if(args.length==1) {
+						
+						Location location = player.getLocation();
+						if(!ChunkClaim.plugin.config_worlds.contains(location.getWorld().getName())) return true;
+						
+						PlayerData playerData = dataStore.getPlayerData(player.getName());
+						Chunk chunk = dataStore.getChunkAt(location, playerData.lastChunk);
+						
+						if(chunk != null) 
+						{
+							String playerName = player.getName();
+							ChunkClaim.addLogEntry("Chunk at " + chunk.x + "|" + chunk.z + " has been marked for deletion by " + playerName);
+							chunk.mark();
+							chunk.marked = true;
+							sendMsg(player,"Marked chunk for deletion.");
+							
+						} else {
+							sendMsg(player,"This chunk is public.");
+						}
+						return true;
+					}
+					else {
+						sendMsg(player,"Usage: /chunk mark");
+						return true;
+					}
+				} else return false;
+			} 			
+			else if (args[0].equalsIgnoreCase("unmark")) {
+				if(player.hasPermission("chunkclaim.admin")) {
+					if(args.length==1) {
+						
+						Location location = player.getLocation();
+						if(!ChunkClaim.plugin.config_worlds.contains(location.getWorld().getName())) return true;
+						
+						PlayerData playerData = dataStore.getPlayerData(player.getName());
+						Chunk chunk = dataStore.getChunkAt(location, playerData.lastChunk);
+						
+						if(chunk != null) 
+						{
+							String playerName = player.getName();
+							ChunkClaim.addLogEntry("Chunk at " + chunk.x + "|" + chunk.z + " has been unmarked by " + playerName);
+							chunk.unmark();
+							sendMsg(player,"Unmarked chunk.");
+							chunk.marked = false;
+							
+						} else {
+							sendMsg(player,"This chunk is public.");
+						}
+						return true;
+					}
+					else {
+						sendMsg(player,"Usage: /chunk unmark");
+						return true;
+					}
+				} else return false;
+			} 		
+			/*
+			else if (args[0].equalsIgnoreCase("deletemarked")) {
+				if(player.hasPermission("chunkclaim.admin")) {
+					if(args.length==1) {
+						sendMsg(player,"Deleting chunks...");
+						for(int i=0; i < markedChunks.size();i++)
+						{
+							Chunk chunk = markedChunks.get(i);
+							PlayerData playerData = this.dataStore.getPlayerData(chunk.ownerName);
+							this.dataStore.deleteChunk(chunk);
+							playerData.credits++;
+							this.dataStore.savePlayerData(chunk.ownerName, playerData);
+							ChunkClaim.addLogEntry("Marked Chunk at " + chunk.x + "|" + chunk.z + " has been deleted.");
+						}
+						sendMsg(player, markedChunks.size() + " Chunks deleted.");
+						markedChunks = new ArrayList<Chunk>();
+						return true;
+					}
+					else {
+						sendMsg(player,"Usage: /chunk deletemarked");
+						return true;
+					}
+				} else return false;
+			} 	*/		
+			else if (args[0].equalsIgnoreCase("next")) {
+				if(player.hasPermission("chunkclaim.admin")) {
+
+					if(args.length==1) {
+						Location location = player.getLocation();
+						if(!ChunkClaim.plugin.config_worlds.contains(location.getWorld().getName())) return true;
+						
+						boolean reset = false;
+						
+						PlayerData playerData = this.dataStore.getPlayerData(player.getName());
+
+						Chunk chunk = null;
+						String worldName = null;
+						boolean inspected = true;
+						boolean marked = true;
+						boolean permanent = false;
+						
+						//int r = (int)(Math.random()*dataStore.chunks.size());
+						int r = this.dataStore.nextChunkId;
+						
+						for(int i = 0; i < dataStore.chunks.size(); i++) {
+							
+							int j = (r + i)%dataStore.chunks.size();
+							
+							chunk = dataStore.chunks.get(j);
+							worldName = chunk.worldName;
+							inspected = chunk.inspected;
+							marked = chunk.marked;
+							permanent = chunk.modifiedBlocks == -1;
+							
+							if(worldName.equals(player.getWorld().getName()) && !inspected && !marked && permanent) {
+								break;
+							}
+						}
+						if(chunk==null || !(worldName.equals(player.getWorld().getName()) && !inspected && !marked && permanent)) {
+							sendMsg(player,"No chunk found.");
+							return true;
+						}
+
+						chunk.inspected = true;
+						int x = chunk.x*16 +8; 
+						int z = chunk.z*16 +8; 
+						int y = player.getWorld().getHighestBlockYAt(new Location(player.getWorld(),x,0,z)) + 15;
+						
+						Location l = new Location(player.getWorld(),x,y,z,0,90);
+						
+						player.teleport(l);
+						
+						String adminstring = "ID: " + chunk.x + "|" + chunk.z;
+						if (chunk != null) {
+							adminstring += ", " + chunk.ownerName;
+							long loginDays = ((new Date()).getTime()-this.dataStore.getPlayerData(chunk.ownerName).lastLogin.getTime())/(1000 * 60 * 60 * 24);
+							adminstring += ", Last Login: " + loginDays +" days ago.";
+						}
+						sendMsg(player,adminstring);
+						Visualization visualization = Visualization.FromChunk(
+								chunk, location.getBlockY(),
+								VisualizationType.Chunk, location);
+						Visualization.Apply(player, visualization);
+						
+						return true;
+
+					}
+					else {
+						sendMsg(player,"Usage: /chunk next");
+						return true;
+					}
+				} else return false;
 			} 
 			else {
 				return false;
@@ -951,8 +1142,10 @@ public class ChunkClaim extends JavaPlugin {
 	}
 	
 	public void regenerateChunk(Chunk chunk) {
-		getServer().getWorld(chunk.worldName).regenerateChunk(chunk.x, chunk.z);
-		getServer().getWorld(chunk.worldName).unloadChunkRequest(chunk.x, chunk.z);
+		if(config_regenerateChunk) {
+			getServer().getWorld(chunk.worldName).regenerateChunk(chunk.x, chunk.z);
+			getServer().getWorld(chunk.worldName).unloadChunkRequest(chunk.x, chunk.z);
+		}
 
 	}
 

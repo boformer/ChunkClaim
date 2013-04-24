@@ -86,21 +86,6 @@ public class PlayerEventHandler implements Listener {
 		this.dataStore.clearCachedPlayerData(player.getName());
 	}
 	
-	//when a player drops an item
-	@EventHandler(priority = EventPriority.LOWEST)
-	public void onPlayerDropItem(PlayerDropItemEvent event) {
-
-		if(!ChunkClaim.plugin.config_worlds.contains(event.getPlayer().getLocation().getWorld().getName())) return;		
-		
-		
-		Player player = event.getPlayer();
-		
-		//check if player has drop permission
-		if(!player.hasPermission("chunkclaim.drops")) {
-			event.setCancelled(true);
-		}
-	}
-	
 	//when a player interacts with an entity...
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
 	public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {

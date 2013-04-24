@@ -90,7 +90,7 @@ public class EntityEventHandler implements Listener {
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
 	public void onEntityExplode(EntityExplodeEvent explodeEvent) {
 
-		if(!ChunkClaim.plugin.config_worlds.contains(explodeEvent.getEntity().getWorld().getName())) return;		
+		if(!ChunkClaim.plugin.config_worlds.contains(explodeEvent.getLocation().getWorld().getName())) return;		
 		
 		List<Block> blocks = explodeEvent.blockList();
 		
